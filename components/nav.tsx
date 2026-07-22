@@ -16,7 +16,10 @@ export default async function Nav() {
         {name}{" "}
         <Link href="/select-name" className="underline">
           변경
-        </Link>
+        </Link>{" "}
+        <a href="/guide.html" className="underline">
+          사용법
+        </a>
       </span>
     </nav>
   );
