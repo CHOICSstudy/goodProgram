@@ -17,6 +17,7 @@ export function ScheduleGrid({ myName }: { myName: string }) {
   const [pending, setPending] = useState<{ start: Date; end: Date } | null>(null);
   const [courseId, setCourseId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   const start = weekStart(new Date());
   const end = addDays(start, 7);
@@ -65,26 +66,58 @@ export function ScheduleGrid({ myName }: { myName: string }) {
 
   return (
     <main className="flex gap-4 p-4">
-      <aside className="w-40 shrink-0">
+      <aside className="w-56 shrink-0">
         <h2 className="mb-2 font-bold">계정</h2>
         <ul className="flex flex-col gap-1">
-          {status.accounts.map((a) => (
-            <li key={a.id}>
-              <button
-                onClick={() => setAccountId(a.id)}
-                className={`w-full rounded border px-2 py-2 text-left text-sm ${
-                  selected === a.id ? "bg-black text-white" : "hover:bg-gray-50"
-                }`}
-              >
-                {a.label}
-                {a.activeSession && (
-                  <span className="block text-xs">
-                    🔴 {a.activeSession.member_name}
-                  </span>
+          {status.accounts.map((a) => {
+            const courses = status.courses.filter((c) => c.account_id === a.id);
+            const isCollapsed = collapsed[a.id] ?? false;
+            return (
+              <li key={a.id} className="rounded border">
+                <div
+                  className={`flex items-center rounded ${
+                    selected === a.id ? "bg-black text-white" : "hover:bg-gray-50"
+                  }`}
+                >
+                  <button
+                    onClick={() => setAccountId(a.id)}
+                    className="grow px-2 py-2 text-left text-sm"
+                  >
+                    {a.label}
+                    {a.activeSession && (
+                      <span className="block text-xs">
+                        🔴 {a.activeSession.member_name}
+                      </span>
+                    )}
+                  </button>
+                  {courses.length > 0 && (
+                    <button
+                      onClick={() =>
+                        setCollapsed((c) => ({ ...c, [a.id]: !isCollapsed }))
+                      }
+                      className="shrink-0 px-2 py-2 text-xs"
+                      title={isCollapsed ? "인강 목록 펼치기" : "인강 목록 접기"}
+                    >
+                      {isCollapsed ? "▸" : "▾"}
+                    </button>
+                  )}
+                </div>
+                {!isCollapsed && courses.length > 0 && (
+                  <ul className="px-2 pb-2 pt-1">
+                    {courses.map((c) => (
+                      <li
+                        key={c.id}
+                        className="truncate text-xs text-gray-500"
+                        title={c.title}
+                      >
+                        · {c.title}
+                      </li>
+                    ))}
+                  </ul>
                 )}
-              </button>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       </aside>
 
