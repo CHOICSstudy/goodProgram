@@ -45,3 +45,7 @@ create table login_attempts (
   locked_until timestamptz,
   updated_at timestamptz not null default now()
 );
+
+-- 한 계정에 열린 세션은 하나만 (체크인 경합 방지)
+create unique index sessions_one_active_per_account
+  on sessions (account_id) where checked_out_at is null;

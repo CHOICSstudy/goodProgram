@@ -13,13 +13,17 @@ export async function GET(req: NextRequest) {
   }
 
   const db = supabaseServer();
-  const { data } = await db
+  const { data, error } = await db
     .from("reservations")
     .select("id,course_id,account_id,member_name,start_at,end_at")
     .eq("account_id", accountId)
     .lt("start_at", end)
     .gt("end_at", start)
     .order("start_at");
+
+  if (error) {
+    console.error("reservations query error", error);
+  }
 
   return NextResponse.json({ reservations: data ?? [] });
 }

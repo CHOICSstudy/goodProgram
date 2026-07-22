@@ -23,12 +23,27 @@ export async function checkIn(
   const active = findActiveSession((data ?? []) as Session[], accountId, now);
   if (active) return { error: `${active.member_name}님이 사용 중입니다.` };
 
+  if ((data ?? []).length > 0) {
+    // 만료되어 자동 체크아웃 처리된 세션이 남아 있으면 먼저 닫는다.
+    // (unique index sessions_one_active_per_account가 이를 요구함)
+    await db
+      .from("sessions")
+      .update({ checked_out_at: now.toISOString() })
+      .eq("account_id", accountId)
+      .is("checked_out_at", null);
+  }
+
   const { error } = await db.from("sessions").insert({
     account_id: accountId,
     member_name: name,
     planned_checkout_at: plannedCheckoutAt,
   });
-  if (error) return { error: "체크인에 실패했습니다." };
+  if (error) {
+    if (error.code === "23505") {
+      return { error: "이미 사용 중인 계정입니다." };
+    }
+    return { error: "체크인에 실패했습니다." };
+  }
   return {};
 }
 

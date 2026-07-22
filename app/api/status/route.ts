@@ -24,6 +24,13 @@ export async function GET() {
         .order("start_at"),
     ]);
 
+  const errors = [accountsRes, coursesRes, sessionsRes, reservationsRes]
+    .map((r) => r.error)
+    .filter(Boolean);
+  if (errors.length > 0) {
+    console.error("status query error", errors);
+  }
+
   const sessions = (sessionsRes.data ?? []) as Session[];
   const payload: StatusPayload = {
     accounts: (accountsRes.data ?? []).map((a) => {

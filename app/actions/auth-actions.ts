@@ -43,6 +43,7 @@ export async function login(
   (await cookies()).set("team_session", token, {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: SESSION_TTL_MS / 1000,
   });
@@ -56,6 +57,7 @@ export async function selectName(formData: FormData): Promise<void> {
   (await cookies()).set("member_name", encodeURIComponent(name), {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: SESSION_TTL_MS / 1000,
   });
