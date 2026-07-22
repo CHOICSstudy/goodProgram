@@ -9,7 +9,13 @@ const CHECKOUT_OPTIONS = [
   { label: "1시간 후", minutes: 60 },
   { label: "1시간 30분 후", minutes: 90 },
   { label: "2시간 후", minutes: 120 },
+  { label: "3시간 후", minutes: 180 },
+  { label: "4시간 후", minutes: 240 },
+  { label: "5시간 후", minutes: 300 },
+  { label: "6시간 후", minutes: 360 },
 ] as const;
+
+const MAX_CUSTOM_HOURS = 10;
 
 export function CheckinControls({
   accountId,
@@ -21,10 +27,23 @@ export function CheckinControls({
   onChanged: () => void;
 }) {
   const [minutes, setMinutes] = useState("null");
+  const [customHours, setCustomHours] = useState("3");
   const [error, setError] = useState<string | null>(null);
 
   async function handleCheckIn() {
-    const m = minutes === "null" ? null : Number(minutes);
+    let m: number | null;
+    if (minutes === "null") {
+      m = null;
+    } else if (minutes === "custom") {
+      const h = Number(customHours);
+      if (!Number.isFinite(h) || h <= 0 || h > MAX_CUSTOM_HOURS) {
+        setError(`직접 입력은 0.5~${MAX_CUSTOM_HOURS}시간 사이로 해주세요.`);
+        return;
+      }
+      m = Math.round(h * 60);
+    } else {
+      m = Number(minutes);
+    }
     const planned = m ? new Date(Date.now() + m * 60_000).toISOString() : null;
     const res = await checkIn(accountId, planned);
     setError(res.error ?? null);
@@ -62,7 +81,22 @@ export function CheckinControls({
             {o.label}
           </option>
         ))}
+        <option value="custom">직접 입력</option>
       </select>
+      {minutes === "custom" && (
+        <span className="flex items-center gap-1 text-sm">
+          <input
+            type="number"
+            min={0.5}
+            max={MAX_CUSTOM_HOURS}
+            step={0.5}
+            value={customHours}
+            onChange={(e) => setCustomHours(e.target.value)}
+            className="w-16 rounded border px-1 py-1 text-sm"
+          />
+          시간 후
+        </span>
+      )}
       <button
         onClick={handleCheckIn}
         className="rounded bg-green-100 px-2 py-1 text-sm"
