@@ -23,14 +23,14 @@ export async function checkIn(
   const active = findActiveSession((data ?? []) as Session[], accountId, now);
   if (active) return { error: `${active.member_name}님이 사용 중입니다.` };
 
-  if ((data ?? []).length > 0) {
+  const staleIds = ((data ?? []) as Session[]).map((s) => s.id);
+  if (staleIds.length > 0) {
     // 만료되어 자동 체크아웃 처리된 세션이 남아 있으면 먼저 닫는다.
     // (unique index sessions_one_active_per_account가 이를 요구함)
     await db
       .from("sessions")
       .update({ checked_out_at: now.toISOString() })
-      .eq("account_id", accountId)
-      .is("checked_out_at", null);
+      .in("id", staleIds);
   }
 
   const { error } = await db.from("sessions").insert({
