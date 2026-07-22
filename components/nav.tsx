@@ -12,14 +12,17 @@ export default async function Nav() {
       <Link href="/">인강 목록</Link>
       <Link href="/schedule">시간표</Link>
       <Link href="/admin">관리</Link>
-      <span className="ml-auto text-sm text-gray-500">
+      <a
+        href="/guide.html"
+        className="ml-auto rounded border px-3 py-1 text-sm hover:bg-gray-50"
+      >
+        사용법
+      </a>
+      <span className="text-sm text-gray-500">
         {name}{" "}
         <Link href="/select-name" className="underline">
           변경
-        </Link>{" "}
-        <a href="/guide.html" className="underline">
-          사용법
-        </a>
+        </Link>
       </span>
     </nav>
   );
