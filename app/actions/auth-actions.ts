@@ -48,3 +48,16 @@ export async function login(
   });
   redirect("/select-name");
 }
+
+export async function selectName(formData: FormData): Promise<void> {
+  const { MEMBERS } = await import("@/lib/members");
+  const name = String(formData.get("name"));
+  if (!MEMBERS.includes(name)) return;
+  (await cookies()).set("member_name", encodeURIComponent(name), {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_TTL_MS / 1000,
+  });
+  redirect("/");
+}
